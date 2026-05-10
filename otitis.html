@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Анамнез — Отит</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f6f3;
+    --bg3: #eeede9;
+    --text: #1a1917;
+    --text2: #6b6a65;
+    --text3: #9e9d97;
+    --border: rgba(26,25,23,0.12);
+    --border2: rgba(26,25,23,0.22);
+    --teal: #1D9E75;
+    --teal-bg: #E1F5EE;
+    --teal-text: #085041;
+    --teal-dark: #0F6E56;
+    --red: #E24B4A;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --r-md: 8px;
+    --r-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+  body { padding: 24px 20px 32px; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
+  .header-icon { width: 32px; height: 32px; background: var(--teal-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .header-icon svg { width: 16px; height: 16px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .header-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
+  .header-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .icd { margin-left: auto; font-size: 11px; font-family: 'Menlo', 'Monaco', monospace; color: var(--text3); background: var(--bg2); padding: 3px 7px; border-radius: 5px; border: 0.5px solid var(--border); }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-track { height: 3px; background: var(--bg3); border-radius: 2px; }
+  .progress-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width 0.35s cubic-bezier(0.4,0,0.2,1); }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .step-label { font-size: 11px; color: var(--text3); }
+  .section-badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 99px; background: var(--teal-bg); color: var(--teal-text); }
+
+  /* Question */
+  .question { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 5px; line-height: 1.4; }
+  .hint { font-size: 12px; color: var(--text3); margin-bottom: 16px; line-height: 1.5; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+  .opt {
+    padding: 10px 13px; border: 0.5px solid var(--border); border-radius: var(--r-md);
+    cursor: pointer; font-size: 13px; color: var(--text); background: var(--bg);
+    text-align: left; transition: background 0.12s, border-color 0.12s; line-height: 1.4;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt:hover { background: var(--bg2); border-color: var(--border2); }
+  .opt.selected { border-color: var(--teal); background: var(--teal-bg); color: var(--teal-text); }
+  .opt.selected::before { content: "✓  "; font-weight: 600; }
+  .opt.flag-opt.selected { border-color: var(--red); background: var(--red-bg); color: var(--red-text); }
+
+  /* Nav */
+  .nav { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    padding: 8px 16px; border-radius: var(--r-md); font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 0.5px solid var(--border2); background: var(--bg); color: var(--text);
+    transition: background 0.12s; white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg2); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+
+  /* Alerts */
+  .alert { border-left: 2px solid var(--red); padding: 9px 12px; background: var(--red-bg); border-radius: 0 var(--r-md) var(--r-md) 0; margin-bottom: 14px; font-size: 12px; color: var(--red-text); line-height: 1.5; }
+  .red-flag { border-left: 2px solid var(--red); padding: 9px 12px; background: var(--red-bg); border-radius: 0 var(--r-md) var(--r-md) 0; margin-bottom: 14px; }
+  .red-flag-title { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .red-flag-text { font-size: 12px; color: var(--red-text); line-height: 1.5; }
+
+  /* Result */
+  .result-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  .result-head { padding: 14px 16px; border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .result-head-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .result-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .result-row { display: flex; flex-direction: column; gap: 5px; }
+  .result-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); }
+  .result-value { font-size: 14px; font-weight: 600; color: var(--text); }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--bg2); color: var(--text2); border: 0.5px solid var(--border); }
+  .tag.ok { background: var(--teal-bg); color: var(--teal-text); border-color: transparent; }
+  .tag.warn { background: var(--amber-bg); color: var(--amber-text); border-color: transparent; }
+  .tag.flag { background: var(--red-bg); color: var(--red-text); border-color: transparent; }
+  .reco { padding: 11px 14px; background: var(--bg2); border-radius: var(--r-md); font-size: 12px; color: var(--text2); line-height: 1.6; border: 0.5px solid var(--border); }
+  .reco-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 5px; }
+
+  .divider { height: 0.5px; background: var(--border); }
+  .restart { background: none; border: none; font-size: 12px; color: var(--text3); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; margin-top: 12px; display: block; }
+  .restart:hover { color: var(--text2); }
+
+  .complete-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .complete-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 99px; background: var(--teal-bg); color: var(--teal-text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24"><path d="M9 12h6m-3-3v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"/></svg>
+  </div>
+  <div>
+    <div class="header-title">Сбор анамнеза — Отит</div>
+    <div class="header-sub">Пошаговый опросник · 11 шагов · 3 раздела</div>
+  </div>
+  <div class="icd">H60–H74</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div class="progress-meta">
+    <span class="step-label" id="step-counter">Шаг 1 из 11</span>
+    <span class="section-badge" id="section-badge">Жалобы</span>
+  </div>
+</div>
+
+<div id="flag-area"></div>
+<div id="question-area"></div>
+<div id="alert-area"></div>
+
+<div class="nav" id="nav">
+  <button class="btn" id="back-btn" onclick="goBack()" disabled>← Назад</button>
+  <button class="btn btn-primary" id="next-btn" onclick="goNext()">Далее →</button>
+</div>
+
+<div id="result-area" style="display:none"></div>
+
+<script>
+const steps = [
+  {
+    section: "Жалобы",
+    q: "Какое ухо беспокоит?",
+    hint: "Уточните сторону поражения — важно для классификации и лечения.",
+    type: "single",
+    opts: ["Правое","Левое","Оба уха"],
+    key: "side"
+  },
+  {
+    section: "Жалобы",
+    q: "Какова интенсивность боли?",
+    hint: "Оцените по ощущениям пациента.",
+    type: "single",
+    opts: ["Нет боли","Лёгкая (не мешает жизни)","Умеренная (отвлекает)","Сильная (невыносимая)"],
+    key: "pain",
+    flags: {
+      "Сильная (невыносимая)": "Выраженный болевой синдром. Возможен мастоидит, абсцесс или перфорация барабанной перепонки. Требует срочного осмотра."
+    }
+  },
+  {
+    section: "Жалобы",
+    q: "Есть ли выделения из уха?",
+    hint: "Характер выделений помогает дифференцировать форму отита.",
+    type: "single",
+    opts: ["Нет","Прозрачные","Гнойные","Кровянистые"],
+    key: "discharge",
+    flags: {
+      "Кровянистые": "Кровянистые выделения — возможная травматическая перфорация, новообразование или осложнённый средний отит."
+    }
+  },
+  {
+    section: "Жалобы",
+    q: "Какие ещё симптомы присутствуют?",
+    hint: "Можно выбрать несколько вариантов.",
+    type: "multi",
+    opts: ["Снижение слуха","Шум в ухе","Заложенность","Головокружение","Тошнота / рвота","Нет других симптомов"],
+    key: "other",
+    flags: {
+      "Головокружение": "Головокружение при отите — признак возможного лабиринтита или центральной патологии. Необходима срочная неврологическая оценка.",
+      "Тошнота / рвота": "Вестибулярная симптоматика (тошнота, рвота) — возможное вовлечение внутреннего уха или ЦНС."
+    }
+  },
+  {
+    section: "Анамнез болезни",
+    q: "Как давно появились симптомы?",
+    hint: "Длительность течения важна для выбора тактики.",
+    type: "single",
+    opts: ["До 3 дней","4–7 дней","1–3 недели","Более 3 недель"],
+    key: "duration",
+    flags: {
+      "Более 3 недель": "Хроническое течение (>3 нед) — подозрение на хронический средний отит или холестеатому. Необходима КТ височных костей."
+    }
+  },
+  {
+    section: "Анамнез болезни",
+    q: "Была ли предшествующая инфекция (ОРВИ, фарингит)?",
+    hint: "Острый средний отит часто является осложнением респираторной инфекции.",
+    type: "single",
+    opts: ["Да, была","Нет","Не знаю"],
+    key: "prev_infection"
+  },
+  {
+    section: "Анамнез болезни",
+    q: "Была ли травма уха или головы?",
+    hint: "Важно для исключения травматической перфорации.",
+    type: "single",
+    opts: ["Да","Нет"],
+    key: "trauma",
+    flags: {
+      "Да": "Указание на травму — необходимо исключить перфорацию барабанной перепонки, гемотимпанум, переломы основания черепа."
+    }
+  },
+  {
+    section: "Анамнез болезни",
+    q: "Получал ли пациент лечение по поводу этого эпизода?",
+    hint: "Позволяет оценить эффективность предшествующей терапии.",
+    type: "single",
+    opts: ["Нет, не лечился","Капли в ухо","Антибиотики перорально","Оба варианта"],
+    key: "prior_treatment"
+  },
+  {
+    section: "Анамнез жизни",
+    q: "Были ли ранее эпизоды отита?",
+    hint: "Рецидивирующий отит требует дообследования (аудиограмма, КТ).",
+    type: "single",
+    opts: ["Нет, первый раз","1–2 раза","3 и более раз"],
+    key: "recurrence",
+    flags: {
+      "3 и более раз": "Рецидивирующий отит (≥3 эпизодов) — показание для ЛОР-консультации, аудиограммы и решения вопроса о тимпанометрии."
+    }
+  },
+  {
+    section: "Анамнез жизни",
+    q: "Есть ли хронические заболевания?",
+    hint: "Влияет на выбор антибиотика и прогноз.",
+    type: "multi",
+    opts: ["Сахарный диабет","Иммунодефицит","Аллергия на антибиотики","ХБП / печёночная недостаточность","Нет"],
+    key: "comorbid",
+    flags: {
+      "Сахарный диабет": "Диабет — риск злокачественного (некротизирующего) наружного отита. Обязателен контроль гликемии и расширенное обследование.",
+      "Иммунодефицит": "Иммунодефицит — атипичная флора, агрессивное течение, расширенная антибиотикотерапия под контролем специалиста."
+    }
+  },
+  {
+    section: "Анамнез жизни",
+    q: "Температура тела при последнем измерении?",
+    hint: "Лихорадка >38,5 °C — признак системного воспаления.",
+    type: "single",
+    opts: ["Норма (до 37,0 °C)","Субфебрильная (37,1–38,5 °C)","Высокая (выше 38,5 °C)"],
+    key: "temp",
+    flags: {
+      "Высокая (выше 38,5 °C)": "Лихорадка >38,5 °C — системное воспаление. Показана антибактериальная терапия, исключение осложнений (мастоидит, менингит)."
+    }
+  }
+];
+
+let current = 0;
+let answers = {};
+let triggeredFlags = {};
+
+function ge(id){ return document.getElementById(id); }
+
+function render(){
+  if(current >= steps.length){ showResult(); return; }
+  const s = steps[current];
+  const pct = Math.round((current / steps.length) * 100);
+  ge("prog").style.width = pct + "%";
+  ge("step-counter").textContent = "Шаг " + (current + 1) + " из " + steps.length;
+  ge("section-badge").textContent = s.section;
+  ge("alert-area").innerHTML = "";
+  ge("result-area").style.display = "none";
+  ge("nav").style.display = "flex";
+
+  const saved = answers[s.key] || [];
+  const flagKeys = s.flags ? Object.keys(s.flags) : [];
+
+  let html = `<div class="question">${s.q}</div><div class="hint">${s.hint}</div><div class="options">`;
+  s.opts.forEach(o => {
+    const sel = saved.includes(o) ? "selected" : "";
+    const isFlag = flagKeys.includes(o) ? "flag-opt" : "";
+    html += `<button class="opt ${sel} ${isFlag}" onclick="select('${s.key}','${escQ(o)}',${s.type==='single'})">${o}</button>`;
+  });
+  html += `</div>`;
+  ge("question-area").innerHTML = html;
+
+  ge("flag-area").innerHTML = "";
+  if(s.flags && saved.length > 0){
+    saved.forEach(v => {
+      if(s.flags[v]){
+        ge("flag-area").innerHTML += `<div class="red-flag"><div class="red-flag-title">⚠ Тревожный признак</div><div class="red-flag-text">${s.flags[v]}</div></div>`;
+      }
+    });
+  }
+
+  ge("back-btn").disabled = current === 0;
+  ge("next-btn").textContent = current === steps.length - 1 ? "Завершить →" : "Далее →";
+}
+
+function escQ(s){ return s.replace(/'/g,"&#39;"); }
+
+function select(key, val, single){
+  if(single){
+    answers[key] = [val];
+  } else {
+    if(!answers[key]) answers[key] = [];
+    const idx = answers[key].indexOf(val);
+    if(idx > -1) answers[key].splice(idx,1);
+    else answers[key].push(val);
+  }
+  render();
+}
+
+function goNext(){
+  const s = steps[current];
+  if(!answers[s.key] || answers[s.key].length === 0){
+    ge("alert-area").innerHTML = `<div class="alert">Пожалуйста, выберите хотя бы один вариант ответа.</div>`;
+    return;
+  }
+  if(s.flags){
+    answers[s.key].forEach(v => {
+      if(s.flags[v]) triggeredFlags[v] = s.flags[v];
+    });
+  }
+  current++;
+  if(current >= steps.length){ showResult(); } else { render(); }
+}
+
+function goBack(){
+  if(current > 0){ current--; render(); }
+}
+
+function showResult(){
+  ge("prog").style.width = "100%";
+  ge("question-area").innerHTML = "";
+  ge("alert-area").innerHTML = "";
+  ge("flag-area").innerHTML = "";
+  ge("nav").style.display = "none";
+  ge("step-counter").textContent = "Анамнез собран";
+  ge("section-badge").textContent = "Итог";
+
+  const side = (answers.side || ["—"])[0];
+  const pain = (answers.pain || ["—"])[0];
+  const disc = (answers.discharge || ["—"])[0];
+  const dur = (answers.duration || ["—"])[0];
+  const temp = (answers.temp || ["—"])[0];
+  const other = (answers.other || []).filter(x => x !== "Нет других симптомов");
+  const comorbid = (answers.comorbid || []).filter(x => x !== "Нет");
+  const recur = (answers.recurrence || ["—"])[0];
+  const trauma = (answers.trauma || ["—"])[0];
+  const prevInf = (answers.prev_infection || ["—"])[0];
+  const treatment = (answers.prior_treatment || ["—"])[0];
+
+  const isAcute = ["До 3 дней","4–7 дней"].includes(dur);
+  const isChronic = ["1–3 недели","Более 3 недель"].includes(dur);
+  const hasFever = temp === "Высокая (выше 38,5 °C)";
+  const hasVertigo = other.includes("Головокружение");
+  const hasDischarge = disc !== "Нет";
+  const hasTrauma = trauma === "Да";
+  const hasDiabetes = comorbid.includes("Сахарный диабет");
+
+  let dx = "Острый средний отит";
+  if(isChronic && hasDischarge) dx = "Хронический гнойный средний отит";
+  else if(!hasDischarge && !hasFever) dx = "Острый катаральный средний отит";
+  else if(hasVertigo) dx = "Острый средний отит — возможный лабиринтит";
+  else if(hasTrauma) dx = "Отит на фоне травмы — исключить перфорацию";
+  else if(hasDiabetes) dx = "Отит у пациента с СД — исключить некротизирующий наружный отит";
+
+  const flagList = Object.keys(triggeredFlags);
+  const hasFlags = flagList.length > 0;
+
+  let recos = [];
+  recos.push("Отоскопия и осмотр ЛОР-врача.");
+  if(hasFever) recos.push("Антибактериальная терапия: амоксициллин/клавуланат 875/125 мг 2 р/сут, 7–10 дней.");
+  if(hasVertigo) recos.push("Срочная консультация невролога — исключить лабиринтит, центральную патологию.");
+  if(isChronic) recos.push("КТ височных костей для исключения холестеатомы.");
+  if(hasDiabetes) recos.push("Контроль гликемии, посев из уха, при некротизирующем отите — госпитализация.");
+  if(hasTrauma) recos.push("Рентген / КТ — исключить перелом основания черепа, гемотимпанум.");
+  if(recur === "3 и более раз") recos.push("Аудиограмма + тимпанометрия, решение вопроса о тимпанотомии.");
+  if(hasFlags) recos.push("Выявлены тревожные признаки — срочный осмотр или госпитализация по показаниям.");
+
+  function tag(text, cls){ return `<span class="tag ${cls||''}">${text}</span>`; }
+
+  let mainTags = "";
+  mainTags += tag(side);
+  mainTags += tag(dur, isChronic ? "warn" : "ok");
+  mainTags += tag(temp, hasFever ? "flag" : "ok");
+  if(disc !== "Нет") mainTags += tag("Выделения: " + disc.toLowerCase(), disc === "Кровянистые" ? "flag" : disc === "Гнойные" ? "warn" : "");
+  if(prevInf === "Да, была") mainTags += tag("После ОРВИ");
+  if(treatment !== "Нет, не лечился") mainTags += tag("Лечение: " + treatment.toLowerCase(), "warn");
+
+  let otherTags = "";
+  other.forEach(o => otherTags += tag(o, flagList.includes(o) ? "flag" : ""));
+  comorbid.forEach(c => otherTags += tag(c, ["Сахарный диабет","Иммунодефицит"].includes(c) ? "flag" : "warn"));
+
+  let flagsHtml = "";
+  if(hasFlags){
+    flagsHtml = `
+      <div class="divider"></div>
+      <div class="result-row">
+        <div class="result-label">Тревожные признаки</div>
+        <div class="tags">${flagList.map(f => tag(f, "flag")).join("")}</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">
+          ${flagList.map(f => `<div style="font-size:12px;color:var(--red-text);line-height:1.5;padding:7px 10px;background:var(--red-bg);border-radius:6px;">${triggeredFlags[f]}</div>`).join("")}
+        </div>
+      </div>`;
+  }
+
+  ge("result-area").style.display = "block";
+  ge("result-area").innerHTML = `
+    <div class="complete-header">
+      <div style="font-size:13px;font-weight:600;color:var(--text)">Анамнез собран</div>
+      <span class="complete-badge">✓ Завершено</span>
+    </div>
+    <div class="result-card">
+      <div class="result-head">
+        <div class="result-head-title">Резюме — отит</div>
+        <div class="icd">H60–H74</div>
+      </div>
+      <div class="result-body">
+        <div class="result-row">
+          <div class="result-label">Предварительный диагноз</div>
+          <div class="result-value">${dx}</div>
+        </div>
+        <div class="divider"></div>
+        <div class="result-row">
+          <div class="result-label">Основные данные</div>
+          <div class="tags">${mainTags}</div>
+        </div>
+        ${otherTags ? `<div class="result-row"><div class="result-label">Симптомы и сопутствующие</div><div class="tags">${otherTags}</div></div>` : ""}
+        ${flagsHtml}
+        <div class="divider"></div>
+        <div class="result-row">
+          <div class="reco-title">Рекомендации</div>
+          <div class="reco">${recos.map((r,i) => `<div style="display:flex;gap:8px;${i>0?'margin-top:5px':''}"><span style="color:var(--teal);font-weight:600;flex-shrink:0">${i+1}.</span><span>${r}</span></div>`).join("")}</div>
+        </div>
+      </div>
+    </div>
+    <button class="restart" onclick="restart()">Начать заново</button>
+  `;
+}
+
+function restart(){
+  current = 0; answers = {}; triggeredFlags = {};
+  ge("result-area").style.display = "none";
+  ge("nav").style.display = "flex";
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
